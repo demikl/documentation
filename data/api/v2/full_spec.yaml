@@ -93,7 +93,9 @@ components:
       schema:
         $ref: '#/components/schemas/APIKeysSort'
     AWSAccountConfigIDPathParameter:
-      description: Unique Datadog ID of the AWS Account Integration Config
+      description: Unique Datadog ID of the AWS Account Integration Config. To get
+        the config ID for an account, use the [List all AWS integrations](https://docs.datadoghq.com/api/latest/aws-integration/#list-all-aws-integrations)
+        endpoint and query by AWS Account ID.
       in: path
       name: aws_account_config_id
       required: true
@@ -1032,7 +1034,9 @@ components:
       x-enum-varnames:
       - API_KEYS
     AWSAccountConfigID:
-      description: Unique Datadog ID of the AWS Account Integration Config
+      description: Unique Datadog ID of the AWS Account Integration Config. To get
+        the config ID for an account, use the [List all AWS integrations](https://docs.datadoghq.com/api/latest/aws-integration/#list-all-aws-integrations)
+        endpoint and query by AWS Account ID.
       example: 00000000-abcd-0001-0000-000000000000
       type: string
     AWSAccountCreateRequest:
@@ -1153,10 +1157,11 @@ components:
       - type
       type: object
     AWSAccountTags:
+      default: []
       description: Tags to apply to all metrics in the account
       items:
         description: Tag to apply to all metrics in the account
-        example: key:value
+        example: env:prod
         type: string
       nullable: true
       type: array
@@ -1265,12 +1270,14 @@ components:
       description: AWS Lambda forwarder
       properties:
         lambdas:
+          default: []
           description: List of Datadog Lambda Log Forwarder ARNs
           items:
             example: arn:aws:lambda:us-east-1:123456789012:function:DatadogLambdaLogForwarder
             type: string
           type: array
         sources:
+          default: []
           description: List of AWS services that will send logs to the Datadog Lambda
             Log Forwarder
           items:
@@ -1335,18 +1342,22 @@ components:
       description: AWS Metrics config
       properties:
         automute_enabled:
+          default: true
           description: Enable EC2 automute for AWS metrics
           example: true
           type: boolean
         collect_cloudwatch_alarms:
+          default: false
           description: Enable CloudWatch alarms collection
           example: true
           type: boolean
         collect_custom_metrics:
+          default: false
           description: Enable custom metrics collection
           example: true
           type: boolean
         enabled:
+          default: true
           description: Enable AWS metrics collection
           example: true
           type: boolean
@@ -1364,12 +1375,20 @@ components:
       - $ref: '#/components/schemas/AWSNamespaceFiltersExcludeOnly'
       - $ref: '#/components/schemas/AWSNamespaceFiltersIncludeOnly'
     AWSNamespaceFiltersExcludeOnly:
-      description: Exclude only these namespaces
+      description: Exclude only these namespaces from metrics collection. `AWS/SQS`
+        and `AWS/ElasticMapReduce` are excluded by default to reduce CloudWatch costs
+        from `GetMetricData` API calls.
       properties:
         exclude_only:
-          description: Exclude only these namespaces
+          default:
+          - AWS/SQS
+          - AWS/ElasticMapReduce
+          description: Exclude only these namespaces from metrics collection. `AWS/SQS`
+            and `AWS/ElasticMapReduce` are excluded by default to reduce CloudWatch
+            costs from `GetMetricData` API calls.
           example:
-          - AWS/EC2
+          - AWS/SQS
+          - AWS/ElasticMapReduce
           items:
             example: AWS/EC2
             type: string
@@ -1503,6 +1522,7 @@ components:
       description: Include all regions
       properties:
         include_all:
+          default: true
           description: Include all regions
           example: false
           type: boolean
@@ -1525,14 +1545,17 @@ components:
       description: AWS Resources config
       properties:
         cloud_security_posture_management_collection:
-          description: Whether Datadog collects cloud security posture management
-            resources from your AWS account.
+          default: false
+          description: Enable Cloud Security Management to scan AWS resources for
+            vulnerabilities, misconfigurations, identity risks, and compliance violations.
+            Requires `extended_collection` to be set to `true`.
           example: false
           type: boolean
         extended_collection:
+          default: true
           description: Whether Datadog collects additional attributes and configuration
-            information about the resources in your AWS account. Required for `cspm_resource_collection`.
-          example: false
+            information about the resources in your AWS account. Required for `cloud_security_posture_management_collection`.
+          example: true
           type: boolean
       type: object
     AWSTracesConfig:
@@ -27783,6 +27806,7 @@ components:
       nullable: true
       properties:
         include_only:
+          default: []
           description: Include only these services
           example:
           - AWS/AppSync
@@ -33539,7 +33563,8 @@ paths:
       description: Get a list of AWS Account Integration Configs.
       operationId: ListAWSAccounts
       parameters:
-      - description: Optional query filter accounts by AWS Account ID
+      - description: Optional query parameter to filter accounts by AWS Account ID.
+          If not provided, all accounts are returned.
         example: '123456789012'
         in: query
         name: aws_account_id
@@ -33567,7 +33592,7 @@ paths:
         - aws_configuration_read
       x-undo:
         type: safe
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
     post:
@@ -33632,12 +33657,12 @@ paths:
         - name: aws_account_config_id
           source: data.id
         type: unsafe
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
   /api/v2/integration/aws/accounts/{aws_account_config_id}:
     delete:
-      description: Delete an AWS Account Integration Config
+      description: Delete an AWS Account Integration Config by config ID.
       operationId: DeleteAWSAccount
       parameters:
       - $ref: '#/components/parameters/AWSAccountConfigIDPathParameter'
@@ -33662,11 +33687,11 @@ paths:
         - aws_configurations_manage
       x-undo:
         type: idempotent
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
     get:
-      description: Get an AWS Account Integration Config
+      description: Get an AWS Account Integration Config by config ID.
       operationId: GetAWSAccount
       parameters:
       - $ref: '#/components/parameters/AWSAccountConfigIDPathParameter'
@@ -33695,11 +33720,11 @@ paths:
         - aws_configuration_read
       x-undo:
         type: safe
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
     patch:
-      description: Update an AWS Account Integration Config
+      description: Update an AWS Account Integration Config by config ID.
       operationId: UpdateAWSAccount
       parameters:
       - $ref: '#/components/parameters/AWSAccountConfigIDPathParameter'
@@ -33735,7 +33760,7 @@ paths:
         - aws_configuration_edit
       x-undo:
         type: idempotent
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
   /api/v2/integration/aws/available_namespaces:
@@ -33764,7 +33789,7 @@ paths:
         - aws_configuration_read
       x-undo:
         type: safe
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
   /api/v2/integration/aws/generate_new_external_id:
@@ -33792,7 +33817,7 @@ paths:
         - aws_configuration_edit
       x-undo:
         type: safe
-      x-unstable: '**Note: This endpoint is in public beta. If you have any feedback,
+      x-unstable: '**Note: This endpoint is in Preview. If you have any feedback,
 
         contact [Datadog support](https://docs.datadoghq.com/help/).**'
   /api/v2/integration/aws/logs/services:
