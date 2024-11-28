@@ -205,6 +205,7 @@ build_preview:
     - build_site
     # remove service_checks json as we don't need to s3 push that..
     - rm -rf data/service_checks
+    - git checkout package.json
     - in-isolation deploy_site
     # remove static images so we can skip from artifact passed in gitlab
     - remove_static_from_repo
